@@ -28,7 +28,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send welcome message when user sends /start"""
     user = update.message.from_user
     await update.message.reply_text(
-        f"Hello {user.first_name}! I'm your ChatGPT-3.5 bot. Ask me anything!"
+        f"Hello {user.first_name}! I'm Mick Your AI. Ask me anything!"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -46,7 +46,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conversations[user_id].append({"role": "user", "content": user_message})
     
     try:
-        # Generate response using ChatGPT-3.5
+        # Generate response using ChatGPT-3.5 (corrected API call)
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=conversations[user_id],
@@ -90,15 +90,16 @@ def main() -> None:
     if "RENDER" in os.environ:
         # Webhook mode for Render
         public_url = os.getenv("RENDER_EXTERNAL_URL")
+        print(f"🤖 Starting webhook mode on {public_url}")
         app.run_webhook(
             listen="0.0.0.0",
             port=PORT,
-            url_path=TELEGRAM_TOKEN,
-            webhook_url=f"{public_url}/{TELEGRAM_TOKEN}"
+            webhook_url=f"{public_url}/webhook",
+            drop_pending_updates=True
         )
     else:
         # Polling mode for local development
-        print("🤖 ChatGPT-3.5 Telegram Bot is running in polling mode...")
+        print("🤖 Starting polling mode...")
         app.run_polling(
             drop_pending_updates=True,
             allowed_updates=Update.ALL_TYPES
