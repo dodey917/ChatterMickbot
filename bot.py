@@ -28,7 +28,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send welcome message when user sends /start"""
     user = update.message.from_user
     await update.message.reply_text(
-        f"Hello {user.first_name}! I'm Mick Your AI. Ask me anything!"
+        f"Hello {user.first_name}! I'm your ChatGPT-3.5 bot. Ask me anything!"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -87,9 +87,20 @@ def main() -> None:
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Determine running environment
-    if "RENDER" in os.environ:
-        # Webhook mode for Render
+    is_render = "RENDER" in os.environ
+    
+    if is_render:
+        # Get Render URL from environment variables
         public_url = os.getenv("RENDER_EXTERNAL_URL")
+        
+        if not public_url:
+            # Alternative method to get Render URL
+            service_name = os.getenv("RENDER_SERVICE_NAME")
+            if service_name:
+                public_url = f"https://{service_name}.onrender.com"
+            else:
+                raise RuntimeError("Could not determine public URL for webhook")
+        
         print(f"🤖 Starting webhook mode on {public_url}")
         app.run_webhook(
             listen="0.0.0.0",
