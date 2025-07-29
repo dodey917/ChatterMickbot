@@ -16,7 +16,9 @@ load_dotenv()
 # Configuration
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
+
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 # Initialize conversation history
 conversations = {}
@@ -43,16 +45,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conversations[user_id].append({"role": "user", "content": user_message})
     
     try:
-        # Generate response using ChatGPT-3.5
-        response = openai.ChatCompletion.create(
+        # Generate response using ChatGPT-3.5 (new API syntax)
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=conversations[user_id],
             max_tokens=500,
             temperature=0.7
         )
         
-        # Get AI reply and add to history
-        ai_reply = response.choices[0].message['content']
+        # Get AI reply
+        ai_reply = response.choices[0].message.content
+        
+        # Add to history
         conversations[user_id].append({"role": "assistant", "content": ai_reply})
         
         # Send response to user
